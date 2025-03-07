@@ -2,14 +2,15 @@ import "./App.css";
 import { useEffect, useState } from "react";
 import Search from "./components/Search";
 import Loader from "./components/Loader";
+import MovieCard from "./components/MovieCard";
 function App() {
-  // States 
+  // States
   const [searchText, setSearchText] = useState("");
   const [errorMessage, setErrorMessage] = useState(null);
   const [movieList, setMovieList] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
 
-  // API Variables 
+  // API Variables
   const API_BASE_URL = "https://api.themoviedb.org/3/";
   const API_KEY = import.meta.env.VITE_TMDB_API_KEY;
 
@@ -20,8 +21,8 @@ function App() {
       Authorization: `Bearer ${API_KEY}`,
     },
   };
-  
-  // Function to fetch movies from the API 
+
+  // Function to fetch movies from the API
   const fetchMovies = async () => {
     setIsLoading(true);
     setErrorMessage("");
@@ -49,7 +50,7 @@ function App() {
     }
   };
 
-  // Effect to fetch the movies 
+  // Effect to fetch the movies
   useEffect(() => {
     fetchMovies();
   }, []);
@@ -72,15 +73,13 @@ function App() {
         <section className="all-movies">
           <h2 className="mt-[40px]">All Movies</h2>
           {isLoading ? (
-            <Loader/>
+            <Loader />
           ) : errorMessage ? (
             <p className="text-red-500">{errorMessage}</p>
           ) : (
             <ul>
               {movieList.map((movie) => (
-                <div key={movie.id} className="">
-                  <p className="text-white">{movie.title}</p>
-                </div>
+                <MovieCard key={movie.id} movie={movie}/>
               ))}
             </ul>
           )}
