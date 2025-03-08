@@ -10,6 +10,7 @@ function App() {
   const [movieList, setMovieList] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
 
+  console.log("search", searchText)
   // API Variables
   const API_BASE_URL = "https://api.themoviedb.org/3/";
   const API_KEY = import.meta.env.VITE_TMDB_API_KEY;
@@ -23,14 +24,15 @@ function App() {
   };
 
   // Function to fetch movies from the API
-  const fetchMovies = async () => {
+  const fetchMovies = async (query = "") => {
     setIsLoading(true);
     setErrorMessage("");
     try {
-      const response = await fetch(
-        `${API_BASE_URL}/discover/movie?sort_by=popularity.desc`,
-        API_OPTIONS
-      );
+      const endpoint = query
+        ? `${API_BASE_URL}/search/movie?query=${encodeURIComponent(query)}`
+        : `${API_BASE_URL}/discover/movie?sort_by=popularity.desc`;
+
+      const response = await fetch(endpoint, API_OPTIONS);
       if (!response.ok) {
         throw new Error("Failed to fetch movies");
       }
@@ -52,8 +54,8 @@ function App() {
 
   // Effect to fetch the movies
   useEffect(() => {
-    fetchMovies();
-  }, []);
+    fetchMovies(searchText);
+  }, [searchText]);
 
   // JSX
   return (
@@ -79,7 +81,7 @@ function App() {
           ) : (
             <ul>
               {movieList.map((movie) => (
-                <MovieCard key={movie.id} movie={movie}/>
+                <MovieCard key={movie.id} movie={movie} />
               ))}
             </ul>
           )}

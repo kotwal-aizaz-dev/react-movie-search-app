@@ -1,5 +1,5 @@
 /* eslint-disable react/prop-types */
-const Search = ({ searchText, setSearchText }) => {
+const Search = ({ searchText, onSearch }) => {
   return (
     <div className="search">
       <div>
@@ -10,7 +10,7 @@ const Search = ({ searchText, setSearchText }) => {
           id=""
           placeholder="Search through thousands of movies"
           value={searchText}
-          onChange={(event) => setSearchText(event.target.value)}
+          onChange={(event) => onSearch(event.target.value)}
         />
       </div>
     </div>
