@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import "./App.css";
 import { useEffect, useState } from "react";
 import Search from "./components/Search";
