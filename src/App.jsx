@@ -7,21 +7,21 @@ import { useDebounce } from "react-use";
 
 import { TMDB_API_KEY } from "./config/env";
 import { getTrendingMovies, updateSearchCount } from "./config/appwrite";
+
 function App() {
-  // States
-  const [searchText, setSearchText] = useState("");
-  const [errorMessage, setErrorMessage] = useState(null);
-  const [movieList, setMovieList] = useState([]);
-  const [trendingMovies, setTrendingMovies] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [debouncedSearchText, setDebouncedSearchText] = useState("");
+  // State Management
+  const [searchText, setSearchText] = useState(""); // Stores the current search input
+  const [errorMessage, setErrorMessage] = useState(null); // Stores error messages
+  const [movieList, setMovieList] = useState([]); // Stores the list of movies from API
+  const [trendingMovies, setTrendingMovies] = useState([]); // Stores trending movies
+  const [isLoading, setIsLoading] = useState(false); // Loading state flag
+  const [debouncedSearchText, setDebouncedSearchText] = useState(""); // Debounced search text to prevent excessive API calls
+  
+  // Debounce the search input by 500ms to reduce API calls
   useDebounce(() => setDebouncedSearchText(searchText), 500, [searchText]);
-  console.log("search", debouncedSearchText);
 
-  // API Variables
+  // API Configuration
   const API_BASE_URL = "https://api.themoviedb.org/3/";
-  // const TMDB_API_KEY = import.meta.env.VITE_TMDB_API_KEY;
-
   const API_OPTIONS = {
     method: "GET",
     headers: {
@@ -30,11 +30,16 @@ function App() {
     },
   };
 
-  // Function to fetch movies from the API
+  /**
+   * Fetches movies from TMDB API based on search query
+   * If no query is provided, fetches popular movies
+   * @param {string} query - Search query for movies
+   */
   const fetchMovies = async (query = "") => {
     setIsLoading(true);
     setErrorMessage("");
     try {
+      // Determine the endpoint based on whether there's a search query
       const endpoint = query
         ? `${API_BASE_URL}/search/movie?query=${encodeURIComponent(query)}`
         : `${API_BASE_URL}/discover/movie?sort_by=popularity.desc`;
@@ -49,8 +54,9 @@ function App() {
         setMovieList([]);
         return;
       }
-      console.log(data);
+      
       setMovieList(data.results || []);
+      // Update search count in database if search returns results
       if (query && data.results.length > 0) {
         await updateSearchCount(debouncedSearchText, data.results[0]);
       }
@@ -62,11 +68,13 @@ function App() {
     }
   };
 
+  /**
+   * Loads trending movies from the database
+   */
   const loadTrendingMovies = async () => {
     setIsLoading(true)
     try {
       const movies = await getTrendingMovies();
-      console.log("Trending movies", movies);
       setTrendingMovies(movies);
     } catch (error) {
       console.log("Error fetching trending movies", error);
@@ -74,30 +82,32 @@ function App() {
       setIsLoading(false)
     }
   };
+
+  // Load trending movies on component mount
   useEffect(() => {
     loadTrendingMovies();
   }, []);
-  // Effect to fetch the movies
+
+  // Fetch movies whenever the debounced search text changes
   useEffect(() => {
     fetchMovies(debouncedSearchText);
   }, [debouncedSearchText]);
 
-  // JSX
   return (
     <main>
       <div className="pattern"></div>
       <div className="wrapper">
-        {/* // ?header starts */}
+        {/* Header Section */}
         <header>
           <img src="./hero.png" alt="hero banner" />
           <h1>
             Find <span className="text-gradient">Movies</span> You&apos;ll Enjoy
             Without the Hassle
           </h1>
-          {/* //? Search Component */}
           <Search searchText={searchText} onSearch={setSearchText} />
         </header>
 
+        {/* Trending Movies Section */}
         <section className="trending min-h-[200px]">
           <h2>Trending Movies</h2>
           { (trendingMovies.length === 0 || isLoading) ? <Loader/>  : (
@@ -112,8 +122,14 @@ function App() {
           )}
         </section>
 
+        {/* Popular/Search Results Section */}
         <section className="all-movies">
-          <h2 className="">Popular Movies</h2>
+          <h2 className="">
+            {
+              debouncedSearchText ? `Showing "${debouncedSearchText}"` : 
+            "Popular Movies"
+          }
+          </h2>
           {isLoading ? (
             <Loader />
           ) : errorMessage ? (
